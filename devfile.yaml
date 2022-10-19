@@ -1,0 +1,33 @@
+schemaVersion: 2.1.0
+metadata:
+  name: python-dev-space
+  version: 0.1.0
+projects:
+  - name: hello-python
+    git:
+      remotes:
+        origin: 'https://github.com/bmeklund/hello-python.git'
+components:
+  - name: python-s2i
+    container:
+      image: quay.io/sclorg/python-39-minimal:latest
+      memoryLimit: 2G
+      mountSources: true
+      volumeMounts:
+        - name: venv
+          path: /home/user/.venv
+        - name: python-volume
+          path: /home/user/.s2i
+  - name: venv
+    volume: {}
+  - name: python-volume
+    volume: {}
+commands:
+  - id: run
+    exec:
+      label: "Run the application"
+      component: python
+      workingDir: ${PROJECTS_ROOT}/python-dev-space
+      commandLine: python -m venv .venv && . .venv/bin/activate && python hello-world.py
+      group:
+        kind: run
