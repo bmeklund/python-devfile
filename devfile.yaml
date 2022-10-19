@@ -10,7 +10,7 @@ projects:
 components:
   - name: python-s2i
     container:
-      image: quay.io/sclorg/python-39-minimal:latest
+      image: podman pull quay.io/sclorg/python-39-minimal-el8
       memoryLimit: 2G
       mountSources: true
       volumeMounts:
