@@ -1,33 +1,52 @@
 schemaVersion: 2.1.0
 metadata:
-  name: python-dev-space
-  version: 0.1.0
-projects:
-  - name: hello-python
+  name: python
+  displayName: Python
+  version: 1.0.0
+starterProjects:
+  - name: flask-example
+    description:
+      'Flask is a web framework, it’s a Python module that lets you develop web applications easily.
+      It’s has a small and easy-to-extend core: it’s a microframework that doesn’t include an ORM (Object Relational Manager) or such features.'
     git:
       remotes:
-        origin: 'https://github.com/bmeklund/hello-python.git'
+        origin: https://github.com/devfile-samples/python-ex
 components:
-  - name: python-s2i
+  - name: py
     container:
-      image: quay.io/sclorg/python-39-minimal-el8
-      memoryLimit: 2G
+      image: registry.access.redhat.com/ubi9/python-39:latest
+      args: ['tail', '-f', '/dev/null']
       mountSources: true
-      volumeMounts:
-        - name: venv
-          path: /home/user/.venv
-        - name: python-volume
-          path: /home/user/.s2i
-  - name: venv
-    volume: {}
-  - name: python-volume
-    volume: {}
+      endpoints:
+        - name: http-python
+          targetPort: 8080
+        - exposure: none
+          name: debug
+          targetPort: 5858
+      env:
+        - name: DEBUG_PORT
+          value: '5858'
 commands:
-  - id: run
+  - id: pip-install-requirements
     exec:
-      label: "Run the application"
-      component: python
-      workingDir: ${PROJECTS_ROOT}/python-dev-space
-      commandLine: python -m venv .venv && . .venv/bin/activate && python hello-world.py
+      commandLine: pip install -r requirements.txt
+      workingDir: ${PROJECT_SOURCE}
+      group:
+        kind: build
+        isDefault: true
+      component: py
+  - id: run-app
+    exec:
+      commandLine: 'python app.py'
+      workingDir: ${PROJECT_SOURCE}
+      component: py
       group:
         kind: run
+        isDefault: true
+  - id: debug-py
+    exec:
+      commandLine: 'pip install debugpy && python -m debugpy --listen 0.0.0.0:${DEBUG_PORT} app.py'
+      workingDir: ${PROJECT_SOURCE}
+      component: py
+      group:
+        kind: debug
